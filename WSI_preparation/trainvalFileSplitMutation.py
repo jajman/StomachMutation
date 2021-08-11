@@ -21,23 +21,32 @@ def getFileName(fileName):
             break
     return fileName[nameStart:nameEnd]
 
-dirName = '/media/jajman/NewVolume/TCGA_colon_MSI/'
+dirName = '/media/jajman/NewVolume/TCGA_STAD_1/'
 
 
-with open('traintest/10FoldCOADREADmssTrain0.bin', 'rb') as f:
+with open('traintest/10Fold_TCGA_STAD_TP53_WT_Train0.bin', 'rb') as f:
     curTrainFiles=pickle.load(f)
 print(len(curTrainFiles))
-'''for i in curTrainFiles:
-    print(i[12:])'''
-for i in range(len(curTrainFiles)):
-    curTrainFiles[i]=curTrainFiles[i].replace('=',' ')
-with open('traintest/10FoldCOADREADmssTest0.bin', 'rb') as f:
+
+with open('traintest/10Fold_TCGA_STAD_TP53_WT_Test0.bin', 'rb') as f:
     curTestFiles=pickle.load(f)
 print(len(curTestFiles))
-'''for i in curTestFiles:
-    print(i[12:])'''
-for i in range(len(curTestFiles)):
-    curTestFiles[i]=curTestFiles[i].replace('=',' ')
+
+
+with open('traintest/TCGA_STAD_WT_all.bin', 'rb') as f:
+    curAllNormFiles=pickle.load(f)
+print(len(curAllNormFiles))
+
+with open('traintest/TCGA_STAD_TP53_mut_all.bin', 'rb') as f:
+    curAllMutFiles=pickle.load(f)
+print(len(curAllMutFiles))
+
+normalTrainLen=len(curTrainFiles)
+normalTestLen=len(curTestFiles)
+allNormLen=len(curAllNormFiles)
+allMutLen=len(curAllMutFiles)
+
+ratio=(allMutLen/allNormLen)*1.5
 
 
 files = os.listdir(dirName)
@@ -52,26 +61,29 @@ for i in files:
     files2 = os.listdir(dirName + i)
     for j in files2:
         if j.endswith('svs'):
-            fileName =j[:12]
-            codeName=j[12:14]
-            if codeName=='-0':
-                if fileName in curTrainFiles:
-                    trainNum += 1
-                    print('train move')
-                    saveDirName = dirName + i + '/TUMOR/'
-                    files3 = os.listdir(saveDirName)
-                    for k in files3:
-                        copyName = saveDirName + k
-                        shutil.copy(copyName, '/home/jajman/train/normal/')
+            fileName =getFileName(j)
+            if (fileName in curAllNormFiles) and (fileName in curTestFiles):
+                print('test in target')
+            if (fileName in curAllNormFiles) and (fileName not in curTestFiles):
+                trainNum += 1
+                print('train move')
+                saveDirName = dirName + i + '/TUMOR/'
+                files3 = os.listdir(saveDirName)
+                random.shuffle(files3)
+                totLen = int(len(files3) * ratio)
+                for k in range(totLen):
+                    copyName = saveDirName + files3[k]
+                    shutil.copy(copyName, '/home/jajman/train/normal/')
 
-                if fileName in curTestFiles:
-                    testNum += 1
-                    print('test move')
-                    saveDirName = dirName + i + '/TUMOR/'
-                    files3 = os.listdir(saveDirName)
-                    for k in files3:
-                        copyName = saveDirName + k
-                        shutil.copy(copyName, '/home/jajman/validation/normal/')
+            if fileName in curTestFiles:
+                testNum += 1
+                print('test move')
+                saveDirName = dirName + i + '/TUMOR/'
+                files3 = os.listdir(saveDirName)
+                for k in files3:
+                    copyName = saveDirName + k
+                    shutil.copy(copyName, '/home/jajman/validation/normal/')
+
 
 print(trainNum)
 print(testNum)
@@ -79,20 +91,14 @@ print(testNum)
 print()
 print()
 
-with open('traintest/10FoldCOADREADmsihTrain0.bin', 'rb') as f:
+with open('traintest/10Fold_TCGA_STAD_TP53_Train0.bin', 'rb') as f:
     curTrainFiles=pickle.load(f)
 print(len(curTrainFiles))
-'''for i in curTrainFiles:
-    print(i[12:])'''
-for i in range(len(curTrainFiles)):
-    curTrainFiles[i]=curTrainFiles[i].replace('=',' ')
-with open('traintest/10FoldCOADREADmsihTest0.bin', 'rb') as f:
+
+with open('traintest/10Fold_TCGA_STAD_TP53_Test0.bin', 'rb') as f:
     curTestFiles=pickle.load(f)
 print(len(curTestFiles))
-'''for i in curTestFiles:
-    print(i[12:])'''
-for i in range(len(curTestFiles)):
-    curTestFiles[i]=curTestFiles[i].replace('=',' ')
+
 
 files = os.listdir(dirName)
 files=sorted(files)
@@ -106,27 +112,28 @@ for i in files:
     files2 = os.listdir(dirName + i)
     for j in files2:
         if j.endswith('svs'):
-            fileName =j[:12]
-            codeName=j[12:14]
-            if codeName=='-0':
-                if fileName in curTrainFiles:
-                    trainNum += 1
-                    print('train move')
-                    saveDirName = dirName + i + '/TUMOR/'
-                    files3 = os.listdir(saveDirName)
-                    for k in files3:
-                        copyName = saveDirName + k
-                        shutil.copy(copyName, '/home/jajman/train/tumor/')
+            fileName =getFileName(j)
+            if fileName in curTrainFiles:
+                trainNum += 1
+                print('train move')
+                saveDirName = dirName + i + '/TUMOR/'
+                files3 = os.listdir(saveDirName)
+                for k in files3:
+                    copyName = saveDirName + k
+                    shutil.copy(copyName, '/home/jajman/train/tumor/')
 
-                if fileName in curTestFiles:
-                    testNum += 1
-                    print('test move')
-                    saveDirName = dirName + i + '/TUMOR/'
-                    files3 = os.listdir(saveDirName)
-                    for k in files3:
-                        copyName = saveDirName + k
-                        shutil.copy(copyName, '/home/jajman/validation/tumor/')
+            if fileName in curTestFiles:
+                testNum += 1
+                print('test move')
+                saveDirName = dirName + i + '/TUMOR/'
+                files3 = os.listdir(saveDirName)
+                for k in files3:
+                    copyName = saveDirName + k
+                    shutil.copy(copyName, '/home/jajman/validation/tumor/')
+
 
 print(trainNum)
 print(testNum)
+
+
 
