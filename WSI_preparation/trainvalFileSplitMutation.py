@@ -46,7 +46,7 @@ normalTestLen=len(curTestFiles)
 allNormLen=len(curAllNormFiles)
 allMutLen=len(curAllMutFiles)
 
-ratio=(allMutLen/allNormLen)*1.5
+ratio=(allMutLen/allNormLen)*1.4
 
 
 files = os.listdir(dirName)
